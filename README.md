@@ -1,515 +1,398 @@
-<!--
- Licensed to the Apache Software Foundation (ASF) under one
- or more contributor license agreements.  See the NOTICE file
- distributed with this work for additional information
- regarding copyright ownership.  The ASF licenses this file
- to you under the Apache License, Version 2.0 (the
- "License"); you may not use this file except in compliance
- with the License.  You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing,
- software distributed under the License is distributed on an
- "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- KIND, either express or implied.  See the License for the
- specific language governing permissions and limitations
- under the License.
--->
-
-<!-- START Apache Airflow, please keep comment here to allow auto update of PyPI readme.md -->
-# Apache Airflow
-
-[![PyPI version](https://badge.fury.io/py/apache-airflow.svg)](https://badge.fury.io/py/apache-airflow)
-[![GitHub Build](https://github.com/apache/airflow/workflows/Tests/badge.svg)](https://github.com/apache/airflow/actions)
-[![Coverage Status](https://codecov.io/gh/apache/airflow/graph/badge.svg?token=WdLKlKHOAU)](https://codecov.io/gh/apache/airflow)
-[![License](https://img.shields.io/:license-Apache%202-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.txt)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/apache-airflow.svg)](https://pypi.org/project/apache-airflow/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/apache/airflow.svg)](https://hub.docker.com/r/apache/airflow)
-[![Docker Stars](https://img.shields.io/docker/stars/apache/airflow.svg)](https://hub.docker.com/r/apache/airflow)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/apache-airflow)](https://pypi.org/project/apache-airflow/)
-[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/apache-airflow)](https://artifacthub.io/packages/search?repo=apache-airflow)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Twitter Follow](https://img.shields.io/twitter/follow/ApacheAirflow.svg?style=social&label=Follow)](https://twitter.com/ApacheAirflow)
-[![Slack Status](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://s.apache.org/airflow-slack)
-[![Contributors](https://img.shields.io/github/contributors/apache/airflow)](https://github.com/apache/airflow/graphs/contributors)
-[![OSSRank](https://shields.io/endpoint?url=https://ossrank.com/shield/6)](https://ossrank.com/p/6)
-
-[Apache Airflow](https://airflow.apache.org/docs/apache-airflow/stable/) (or simply Airflow) is a platform to programmatically author, schedule, and monitor workflows.
-
-When workflows are defined as code, they become more maintainable, versionable, testable, and collaborative.
-
-Use Airflow to author workflows as directed acyclic graphs (DAGs) of tasks. The Airflow scheduler executes your tasks on an array of workers while following the specified dependencies. Rich command line utilities make performing complex surgeries on DAGs a snap. The rich user interface makes it easy to visualize pipelines running in production, monitor progress, and troubleshoot issues when needed.
-
-<!-- END Apache Airflow, please keep comment here to allow auto update of PyPI readme.md -->
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of contents**
-
-- [Project Focus](#project-focus)
-- [Principles](#principles)
-- [Requirements](#requirements)
-- [Getting started](#getting-started)
-- [Installing from PyPI](#installing-from-pypi)
-- [Official source code](#official-source-code)
-- [Convenience packages](#convenience-packages)
-- [User Interface](#user-interface)
-- [Semantic versioning](#semantic-versioning)
-- [Version Life Cycle](#version-life-cycle)
-- [Support for Python and Kubernetes versions](#support-for-python-and-kubernetes-versions)
-- [Base OS support for reference Airflow images](#base-os-support-for-reference-airflow-images)
-- [Approach to dependencies of Airflow](#approach-to-dependencies-of-airflow)
-- [Contributing](#contributing)
-- [Who uses Apache Airflow?](#who-uses-apache-airflow)
-- [Who maintains Apache Airflow?](#who-maintains-apache-airflow)
-- [What goes into the next release?](#what-goes-into-the-next-release)
-- [Can I use the Apache Airflow logo in my presentation?](#can-i-use-the-apache-airflow-logo-in-my-presentation)
-- [Airflow merchandise](#airflow-merchandise)
-- [Links](#links)
-- [Sponsors](#sponsors)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-## Project Focus
-
-Airflow works best with workflows that are mostly static and slowly changing. When the DAG structure is similar from one run to the next, it clarifies the unit of work and continuity. Other similar projects include [Luigi](https://github.com/spotify/luigi), [Oozie](https://oozie.apache.org/) and [Azkaban](https://azkaban.github.io/).
-
-Airflow is commonly used to process data, but has the opinion that tasks should ideally be idempotent (i.e., results of the task will be the same, and will not create duplicated data in a destination system), and should not pass large quantities of data from one task to the next (though tasks can pass metadata using Airflow's [XCom feature](https://airflow.apache.org/docs/apache-airflow/stable/concepts/xcoms.html)). For high-volume, data-intensive tasks, a best practice is to delegate to external services specializing in that type of work.
-
-Airflow is not a streaming solution, but it is often used to process real-time data, pulling data off streams in batches.
-
-## Principles
-
-- **Dynamic**: Airflow pipelines are configuration as code (Python), allowing for dynamic pipeline generation. This allows for writing code that instantiates pipelines dynamically.
-- **Extensible**: Easily define your own operators, executors and extend the library so that it fits the level of abstraction that suits your environment.
-- **Elegant**: Airflow pipelines are lean and explicit. Parameterizing your scripts is built into the core of Airflow using the powerful **Jinja** templating engine.
-- **Scalable**: Airflow has a modular architecture and uses a message queue to orchestrate an arbitrary number of workers.
-
-<!-- START Requirements, please keep comment here to allow auto update of PyPI readme.md -->
-## Requirements
-
-Apache Airflow is tested with:
-
-|             | Main version (dev)     | Stable version (2.7.3)       |
-|-------------|------------------------|------------------------------|
-| Python      | 3.8, 3.9, 3.10, 3.11   | 3.8, 3.9, 3.10, 3.11         |
-| Platform    | AMD64/ARM64(\*)        | AMD64/ARM64(\*)              |
-| Kubernetes  | 1.25, 1.26, 1.27, 1.28 | 1.24, 1.25, 1.26, 1.27, 1.28 |
-| PostgreSQL  | 11, 12, 13, 14, 15, 16 | 11, 12, 13, 14, 15           |
-| MySQL       | 8.0, Innovation        | 5.7, 8.0                     |
-| SQLite      | 3.15.0+                | 3.15.0+                      |
-| MSSQL       | 2017(\*\*), 2019(\*\*) | 2017(\*\*), 2019(\*\*)       |
-
-\* Experimental
-
-\*\* **Discontinued soon**, not recommended for the new installation
-
-**Note**: MySQL 5.x versions are unable to or have limitations with
-running multiple schedulers -- please see the [Scheduler docs](https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/scheduler.html).
-MariaDB is not tested/recommended.
-
-**Note**: SQLite is used in Airflow tests. Do not use it in production. We recommend
-using the latest stable version of SQLite for local development.
-
-**Note**: Airflow currently can be run on POSIX-compliant Operating Systems. For development, it is regularly
-tested on fairly modern Linux Distros and recent versions of macOS.
-On Windows you can run it via WSL2 (Windows Subsystem for Linux 2) or via Linux Containers.
-The work to add Windows support is tracked via [#10388](https://github.com/apache/airflow/issues/10388), but
-it is not a high priority. You should only use Linux-based distros as "Production" execution environment
-as this is the only environment that is supported. The only distro that is used in our CI tests and that
-is used in the [Community managed DockerHub image](https://hub.docker.com/p/apache/airflow) is
-`Debian Bookworm`. We also have support for legacy ``Debian Bullseye`` base image if you want to build a
-custom image but it is deprecated and option to do it will be removed in the Dockerfile that
-will accompany Airflow 2.9.0 so you are advised to switch to ``Debian Bookworm`` for your custom images.
-
-<!-- END Requirements, please keep comment here to allow auto update of PyPI readme.md -->
-<!-- START Getting started, please keep comment here to allow auto update of PyPI readme.md -->
-## Getting started
-
-Visit the official Airflow website documentation (latest **stable** release) for help with
-[installing Airflow](https://airflow.apache.org/docs/apache-airflow/stable/installation/),
-[getting started](https://airflow.apache.org/docs/apache-airflow/stable/start.html), or walking
-through a more complete [tutorial](https://airflow.apache.org/docs/apache-airflow/stable/tutorial/).
-
-> Note: If you're looking for documentation for the main branch (latest development branch): you can find it on [s.apache.org/airflow-docs](https://s.apache.org/airflow-docs/).
-
-For more information on Airflow Improvement Proposals (AIPs), visit
-the [Airflow Wiki](https://cwiki.apache.org/confluence/display/AIRFLOW/Airflow+Improvement+Proposals).
-
-Documentation for dependent projects like provider packages, Docker image, Helm Chart, you'll find it in [the documentation index](https://airflow.apache.org/docs/).
-
-<!-- END Getting started, please keep comment here to allow auto update of PyPI readme.md -->
-<!-- START Installing from PyPI, please keep comment here to allow auto update of PyPI readme.md -->
-## Installing from PyPI
-
-We publish Apache Airflow as `apache-airflow` package in PyPI. Installing it however might be sometimes tricky
-because Airflow is a bit of both a library and application. Libraries usually keep their dependencies open, and
-applications usually pin them, but we should do neither and both simultaneously. We decided to keep
-our dependencies as open as possible (in `setup.py`) so users can install different versions of libraries
-if needed. This means that `pip install apache-airflow` will not work from time to time or will
-produce unusable Airflow installation.
-
-To have repeatable installation, however, we keep a set of "known-to-be-working" constraint
-files in the orphan `constraints-main` and `constraints-2-0` branches. We keep those "known-to-be-working"
-constraints files separately per major/minor Python version.
-You can use them as constraint files when installing Airflow from PyPI. Note that you have to specify
-correct Airflow tag/version/branch and Python versions in the URL.
-
-
-1. Installing just Airflow:
-
-> Note: Only `pip` installation is currently officially supported.
-
-While it is possible to install Airflow with tools like [Poetry](https://python-poetry.org) or
-[pip-tools](https://pypi.org/project/pip-tools), they do not share the same workflow as
-`pip` - especially when it comes to constraint vs. requirements management.
-Installing via `Poetry` or `pip-tools` is not currently supported.
-
-There are known issues with ``bazel`` that might lead to circular dependencies when using it to install
-Airflow. Please switch to ``pip`` if you encounter such problems. ``Bazel`` community works on fixing
-the problem in `this PR <https://github.com/bazelbuild/rules_python/pull/1166>`_ so it might be that
-newer versions of ``bazel`` will handle it.
-
-If you wish to install Airflow using those tools, you should use the constraint files and convert
-them to the appropriate format and workflow that your tool requires.
-
-
-```bash
-pip install 'apache-airflow==2.7.3' \
- --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.3/constraints-3.8.txt"
-```
-
-2. Installing with extras (i.e., postgres, google)
-
-```bash
-pip install 'apache-airflow[postgres,google]==2.7.3' \
- --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.3/constraints-3.8.txt"
-```
-
-For information on installing provider packages, check
-[providers](http://airflow.apache.org/docs/apache-airflow-providers/index.html).
-
-<!-- END Installing from PyPI, please keep comment here to allow auto update of PyPI readme.md -->
-<!-- START Official source code, please keep comment here to allow auto update of PyPI readme.md -->
-## Official source code
-
-Apache Airflow is an [Apache Software Foundation](https://www.apache.org) (ASF) project,
-and our official source code releases:
-
-- Follow the [ASF Release Policy](https://www.apache.org/legal/release-policy.html)
-- Can be downloaded from [the ASF Distribution Directory](https://downloads.apache.org/airflow)
-- Are cryptographically signed by the release manager
-- Are officially voted on by the PMC members during the
-  [Release Approval Process](https://www.apache.org/legal/release-policy.html#release-approval)
-
-Following the ASF rules, the source packages released must be sufficient for a user to build and test the
-release provided they have access to the appropriate platform and tools.
-
-<!-- END Official source code, please keep comment here to allow auto update of PyPI readme.md -->
-## Convenience packages
-
-There are other ways of installing and using Airflow. Those are "convenience" methods - they are
-not "official releases" as stated by the `ASF Release Policy`, but they can be used by the users
-who do not want to build the software themselves.
-
-Those are - in the order of most common ways people install Airflow:
-
-- [PyPI releases](https://pypi.org/project/apache-airflow/) to install Airflow using standard `pip` tool
-- [Docker Images](https://hub.docker.com/r/apache/airflow) to install airflow via
-  `docker` tool, use them in Kubernetes, Helm Charts, `docker-compose`, `docker swarm`, etc. You can
-  read more about using, customising, and extending the images in the
-  [Latest docs](https://airflow.apache.org/docs/docker-stack/index.html), and
-  learn details on the internals in the [IMAGES.rst](https://github.com/apache/airflow/blob/main/IMAGES.rst) document.
-- [Tags in GitHub](https://github.com/apache/airflow/tags) to retrieve the git project sources that
-  were used to generate official source packages via git
-
-All those artifacts are not official releases, but they are prepared using officially released sources.
-Some of those artifacts are "development" or "pre-release" ones, and they are clearly marked as such
-following the ASF Policy.
-
-## User Interface
-
-- **DAGs**: Overview of all DAGs in your environment.
-
-  ![DAGs](https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/dags.png)
-
-- **Grid**: Grid representation of a DAG that spans across time.
-
-  ![Grid](https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/grid.png)
-
-- **Graph**: Visualization of a DAG's dependencies and their current status for a specific run.
-
-  ![Graph](https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/graph.png)
-
-- **Task Duration**: Total time spent on different tasks over time.
-
-  ![Task Duration](https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/duration.png)
-
-- **Gantt**: Duration and overlap of a DAG.
-
-  ![Gantt](https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/gantt.png)
-
-- **Code**: Quick way to view source code of a DAG.
-
-  ![Code](https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/code.png)
-
-## Semantic versioning
-
-As of Airflow 2.0.0, we support a strict [SemVer](https://semver.org/) approach for all packages released.
-
-There are few specific rules that we agreed to that define details of versioning of the different
-packages:
-
-* **Airflow**: SemVer rules apply to core airflow only (excludes any changes to providers).
-  Changing limits for versions of Airflow dependencies is not a breaking change on its own.
-* **Airflow Providers**: SemVer rules apply to changes in the particular provider's code only.
-  SemVer MAJOR and MINOR versions for the packages are independent of the Airflow version.
-  For example, `google 4.1.0` and `amazon 3.0.3` providers can happily be installed
-  with `Airflow 2.1.2`. If there are limits of cross-dependencies between providers and Airflow packages,
-  they are present in providers as `install_requires` limitations. We aim to keep backwards
-  compatibility of providers with all previously released Airflow 2 versions but
-  there will sometimes be breaking changes that might make some, or all
-  providers, have minimum Airflow version specified.
-* **Airflow Helm Chart**: SemVer rules apply to changes in the chart only. SemVer MAJOR and MINOR
-  versions for the chart are independent of the Airflow version. We aim to keep backwards
-  compatibility of the Helm Chart with all released Airflow 2 versions, but some new features might
-  only work starting from specific Airflow releases. We might however limit the Helm
-  Chart to depend on minimal Airflow version.
-* **Airflow API clients**: Their versioning is independent from Airflow versions. They follow their own
-  SemVer rules for breaking changes and new features - which for example allows to change the way we generate
-  the clients.
-
-## Version Life Cycle
-
-Apache Airflow version life cycle:
-
-<!-- This table is automatically updated by pre-commit scripts/ci/pre_commit/pre_commit_supported_versions.py -->
-<!-- Beginning of auto-generated table -->
-
-| Version   | Current Patch/Minor   | State     | First Release   | Limited Support   | EOL/Terminated   |
-|-----------|-----------------------|-----------|-----------------|-------------------|------------------|
-| 2         | 2.7.3                 | Supported | Dec 17, 2020    | TBD               | TBD              |
-| 1.10      | 1.10.15               | EOL       | Aug 27, 2018    | Dec 17, 2020      | June 17, 2021    |
-| 1.9       | 1.9.0                 | EOL       | Jan 03, 2018    | Aug 27, 2018      | Aug 27, 2018     |
-| 1.8       | 1.8.2                 | EOL       | Mar 19, 2017    | Jan 03, 2018      | Jan 03, 2018     |
-| 1.7       | 1.7.1.2               | EOL       | Mar 28, 2016    | Mar 19, 2017      | Mar 19, 2017     |
-
-<!-- End of auto-generated table -->
-
-Limited support versions will be supported with security and critical bug fix only.
-EOL versions will not get any fixes nor support.
-We always recommend that all users run the latest available minor release for whatever major version is in use.
-We **highly** recommend upgrading to the latest Airflow major release at the earliest convenient time and before the EOL date.
-
-## Support for Python and Kubernetes versions
-
-As of Airflow 2.0, we agreed to certain rules we follow for Python and Kubernetes support.
-They are based on the official release schedule of Python and Kubernetes, nicely summarized in the
-[Python Developer's Guide](https://devguide.python.org/#status-of-python-branches) and
-[Kubernetes version skew policy](https://kubernetes.io/docs/setup/release/version-skew-policy/).
-
-1. We drop support for Python and Kubernetes versions when they reach EOL. Except for Kubernetes, a
-   version stays supported by Airflow if two major cloud providers still provide support for it. We drop
-   support for those EOL versions in main right after EOL date, and it is effectively removed when we release
-   the first new MINOR (Or MAJOR if there is no new MINOR version) of Airflow. For example, for Python 3.8 it
-   means that we will drop support in main right after 27.06.2023, and the first MAJOR or MINOR version of
-   Airflow released after will not have it.
-
-2. We support a new version of Python/Kubernetes in main after they are officially released, as soon as we
-   make them work in our CI pipeline (which might not be immediate due to dependencies catching up with
-   new versions of Python mostly) we release new images/support in Airflow based on the working CI setup.
-
-3. This policy is best-effort which means there may be situations where we might terminate support earlier
-   if circumstances require it.
-
-## Base OS support for reference Airflow images
-
-The Airflow Community provides conveniently packaged container images that are published whenever
-we publish an Apache Airflow release. Those images contain:
-
-* Base OS with necessary packages to install Airflow (stable Debian OS)
-* Base Python installation in versions supported at the time of release for the MINOR version of
-  Airflow released (so there could be different versions for 2.3 and 2.2 line for example)
-* Libraries required to connect to supported Databases (again the set of databases supported depends
-  on the MINOR version of Airflow)
-* Predefined set of popular providers (for details see the [Dockerfile](https://raw.githubusercontent.com/apache/airflow/main/Dockerfile)).
-* Possibility of building your own, custom image where the user can choose their own set of providers
-  and libraries (see [Building the image](https://airflow.apache.org/docs/docker-stack/build.html))
-* In the future Airflow might also support a "slim" version without providers nor database clients installed
-
-The version of the base OS image is the stable version of Debian. Airflow supports using all currently active
-stable versions - as soon as all Airflow dependencies support building, and we set up the CI pipeline for
-building and testing the OS version. Approximately 6 months before the end-of-regular support of a
-previous stable version of the OS, Airflow switches the images released to use the latest supported
-version of the OS.
-
-For example since ``Debian Buster`` end-of-life was August 2022, Airflow switched the images in `main` branch
-to use ``Debian Bullseye`` in February/March 2022. The version was used in the next MINOR release after
-the switch happened. In case of the Bullseye switch - 2.3.0 version used ``Debian Bullseye``.
-The images released  in the previous MINOR version continue to use the version that all other releases
-for the MINOR version used. Similar switch from ``Debian Bullseye`` to ``Debian Bookworm`` has been implemented
-before 2.8.0 release in October 2023 and ``Debian Bookworm`` will be the only option supported as of
-Airflow 2.9.0.
-
-Users will continue to be able to build their images using stable Debian releases until the end of regular
-support and building and verifying of the images happens in our CI but no unit tests were executed using
-this image in the `main` branch.
-
-## Approach to dependencies of Airflow
-
-Airflow has a lot of dependencies - direct and transitive, also Airflow is both - library and application,
-therefore our policies to dependencies has to include both - stability of installation of application,
-but also ability to install newer version of dependencies for those users who develop DAGs. We developed
-the approach where `constraints` are used to make sure airflow can be installed in a repeatable way, while
-we do not limit our users to upgrade most of the dependencies. As a result we decided not to upper-bound
-version of Airflow dependencies by default, unless we have good reasons to believe upper-bounding them is
-needed because of importance of the dependency as well as risk it involves to upgrade specific dependency.
-We also upper-bound the dependencies that we know cause problems.
-
-The constraint mechanism of ours takes care about finding and upgrading all the non-upper bound dependencies
-automatically (providing that all the tests pass). Our `main` build failures will indicate in case there
-are versions of dependencies that break our tests - indicating that we should either upper-bind them or
-that we should fix our code/tests to account for the upstream changes from those dependencies.
-
-Whenever we upper-bound such a dependency, we should always comment why we are doing it - i.e. we should have
-a good reason why dependency is upper-bound. And we should also mention what is the condition to remove the
-binding.
-
-### Approach for dependencies for Airflow Core
-
-Those `extras` and `providers` dependencies are maintained in `setup.cfg`.
-
-There are few dependencies that we decided are important enough to upper-bound them by default, as they are
-known to follow predictable versioning scheme, and we know that new versions of those are very likely to
-bring breaking changes. We commit to regularly review and attempt to upgrade to the newer versions of
-the dependencies as they are released, but this is manual process.
-
-The important dependencies are:
-
-* `SQLAlchemy`: upper-bound to specific MINOR version (SQLAlchemy is known to remove deprecations and
-   introduce breaking changes especially that support for different Databases varies and changes at
-   various speed (example: SQLAlchemy 1.4 broke MSSQL integration for Airflow)
-* `Alembic`: it is important to handle our migrations in predictable and performant way. It is developed
-   together with SQLAlchemy. Our experience with Alembic is that it very stable in MINOR version
-* `Flask`: We are using Flask as the back-bone of our web UI and API. We know major version of Flask
-   are very likely to introduce breaking changes across those so limiting it to MAJOR version makes sense
-* `werkzeug`: the library is known to cause problems in new versions. It is tightly coupled with Flask
-   libraries, and we should update them together
-* `celery`: Celery is crucial component of Airflow as it used for CeleryExecutor (and similar). Celery
-   [follows SemVer](https://docs.celeryq.dev/en/stable/contributing.html?highlight=semver#versions), so
-   we should upper-bound it to the next MAJOR version. Also, when we bump the upper version of the library,
-   we should make sure Celery Provider minimum Airflow version is updated.
-* `kubernetes`: Kubernetes is a crucial component of Airflow as it is used for the KubernetesExecutor
-   (and similar). Kubernetes Python library [follows SemVer](https://github.com/kubernetes-client/python#compatibility),
-   so we should upper-bound it to the next MAJOR version. Also, when we bump the upper version of the library,
-   we should make sure Kubernetes Provider minimum Airflow version is updated.
-
-### Approach for dependencies in Airflow Providers and extras
-
-The main part of the Airflow is the Airflow Core, but the power of Airflow also comes from a number of
-providers that extend the core functionality and are released separately, even if we keep them (for now)
-in the same monorepo for convenience. You can read more about the providers in the
-[Providers documentation](https://airflow.apache.org/docs/apache-airflow-providers/index.html). We also
-have set of policies implemented for maintaining and releasing community-managed providers as well
-as the approach for community vs. 3rd party providers in the [providers](https://github.com/apache/airflow/blob/main/PROVIDERS.rst) document.
-
-Those `extras` and `providers` dependencies are maintained in `provider.yaml` of each provider.
-
-By default, we should not upper-bound dependencies for providers, however each provider's maintainer
-might decide to add additional limits (and justify them with comment).
-
-<!-- START Contributing, please keep comment here to allow auto update of PyPI readme.md -->
-
-## Contributing
-
-Want to help build Apache Airflow? Check out our [contributing documentation](https://github.com/apache/airflow/blob/main/CONTRIBUTING.rst).
-
-Official Docker (container) images for Apache Airflow are described in [IMAGES.rst](https://github.com/apache/airflow/blob/main/IMAGES.rst).
-
-<!-- END Contributing, please keep comment here to allow auto update of PyPI readme.md -->
-<!-- START Who uses Apache Airflow, please keep comment here to allow auto update of PyPI readme.md -->
-
-## Who uses Apache Airflow?
-
-We know about around 500 organizations that are using Apache Airflow (but there are likely many more)
-[in the wild](https://github.com/apache/airflow/blob/main/INTHEWILD.md).
-
-If you use Airflow - feel free to make a PR to add your organisation to the list.
-
-<!-- END Who uses Apache Airflow, please keep comment here to allow auto update of PyPI readme.md -->
-<!-- START Who maintains Apache Airflow, please keep comment here to allow auto update of PyPI readme.md -->
-
-## Who maintains Apache Airflow?
-
-Airflow is the work of the [community](https://github.com/apache/airflow/graphs/contributors),
-but the [core committers/maintainers](https://people.apache.org/committers-by-project.html#airflow)
-are responsible for reviewing and merging PRs as well as steering conversations around new feature requests.
-If you would like to become a maintainer, please review the Apache Airflow
-[committer requirements](https://github.com/apache/airflow/blob/main/COMMITTERS.rst#guidelines-to-become-an-airflow-committer).
-
-<!-- END Who maintains Apache Airflow, please keep comment here to allow auto update of PyPI readme.md -->
-
-## What goes into the next release?
-
-Often you will see an issue that is assigned to specific milestone with Airflow version, or PR that gets merged
-to the main branch and you might wonder which release the merged PR will be released in or which release the
-issue will be fixed in. The answer to it is as usual - it depends. The answer is different for PRs and Issues.
-
-To add a bit of context, ee are following the [Semver](https://semver.org/) versioning scheme as described in
-[Airflow release process](https://airflow.apache.org/docs/apache-airflow/stable/release-process.html). More
-details are explained in detail in this README in [Semantic versioning](#semantic-versioning) chapter, but
-in short, we have `MAJOR.MINOR.PATCH` versions of Airflow, where `MAJOR` version is incremented when there
-are breaking changes, `MINOR` version is incremented when there are new features added, and `PATCH` version
-is incremented when there are only bug-fixes and doc-only changes.
-
-Generally we release `MINOR` versions of Airflow from a branch that is named after the MINOR version. For example
-`2.7.*` releases are released from `v2-7-stable` branch, `2.8.*` releases are released from `v2-8-stable`
-branch, etc.
-
-Most of the time in our release cycle, when the branch for next `MINOR` branch is not yet created, all
-PRs merged to `main` (unless they get reverted), will find their way to the next `MINOR` release. For example
-if the last release is `2.7.0` or `2.7.3` and `v2-8-stable` branch is not created yet, the next `MINOR` release
-is `2.8.0` and all PRs merged to main will be released in `2.8.0`. There is a brief period of time when we
-cut a new `MINOR` release branch and prepare alpha, beta, RC candidates for the `2.NEXT_MINOR.0` version
-where PRs merged to main will only be released in the following `MINOR` release.
-
-However, some PRs (bug-fixes and doc-only changes) when merged, can be cherry-picked to current `MINOR` branch
-and released in the next `PATCHLEVEL` release - for example when the last released version from `v2-7-stable`
-branch is `2.7.2`. Some of the PRs from main can be marked as `2.7.3` milestone by committers and attempt by the
-release manager to cherry-pick them is made. If successful, they will be released in `2.7.3`. The final
-decision about cherry-picking is made by the release manager.
-
-Marking issues with a milestone is a bit different. Maintainers do not mark issues with a milestone usually,
-normally they are only marked in PRs. If PR linked to the issue (and "fixing it") gets merged and released
-in a specific version following the process described above, the issue will be automatically closed, no
-milestone will be set for the issue, you need to check the PR that fixed the issue to see which version
-it was released in. However sometimes maintainers mark issues with specific milestone, which means that the
-issue is important to become a candidate to take a look when the release is being prepared. Since this is an
-Open-Source project, where basically all contributors volunteer their time, there is no guarantee that specific
-issue will be fixed in specific version. We do not want to hold the release because some issue is not fixed,
-so in such case release manager will reassign such unfixed issues to the next milestone in case they are not
-fixed in time for the current release. Therefore, the milestone for issue is more of an intent that it should be
-looked at, than promise it will be fixed in the version.
-
-## Can I use the Apache Airflow logo in my presentation?
-
-Yes! Be sure to abide by the Apache Foundation [trademark policies](https://www.apache.org/foundation/marks/#books) and the Apache Airflow [Brandbook](https://cwiki.apache.org/confluence/display/AIRFLOW/Brandbook). The most up-to-date logos are found in [this repo](https://github.com/apache/airflow/tree/main/docs/apache-airflow/img/logos/) and on the Apache Software Foundation [website](https://www.apache.org/logos/about.html).
-
-## Airflow merchandise
-
-If you would love to have Apache Airflow stickers, t-shirt, etc. then check out
-[Redbubble Shop](https://www.redbubble.com/i/sticker/Apache-Airflow-by-comdev/40497530.EJUG5).
-
-## Links
-
-- [Documentation](https://airflow.apache.org/docs/apache-airflow/stable/)
-- [Chat](https://s.apache.org/airflow-slack)
-
-## Sponsors
-
-The CI infrastructure for Apache Airflow has been sponsored by:
-
-<!-- Ordered by most recently "funded" -->
-
-<a href="https://astronomer.io"><img src="https://assets2.astronomer.io/logos/logoForLIGHTbackground.png" alt="astronomer.io" width="250px"></a>
-<a href="https://aws.amazon.com/opensource/"><img src="docs/integration-logos/aws/AWS-Cloud-alt_light-bg@4x.png" alt="AWS OpenSource" width="130px"></a>
+<div class="Box-sc-g0xbh4-0 bJMeLZ js-snippet-clipboard-copy-unpositioned" data-hpc="true"><article class="markdown-body entry-content container-lg" itemprop="text">
+
+<div class="markdown-heading" dir="auto"><h1 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">阿帕奇气流</font></font></h1><a id="user-content-apache-airflow" class="anchor" aria-label="永久链接：Apache Airflow" href="#apache-airflow"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><a href="https://badge.fury.io/py/apache-airflow" rel="nofollow"><img src="https://camo.githubusercontent.com/71424b7e68f747f4c3def5008c06bba540d882ac5f2040a7f4324aefb6293371/68747470733a2f2f62616467652e667572792e696f2f70792f6170616368652d616972666c6f772e737667" alt="PyPI 版本" data-canonical-src="https://badge.fury.io/py/apache-airflow.svg" style="max-width: 100%;"></a>
+<a href="https://github.com/apache/airflow/actions"><img src="https://github.com/apache/airflow/workflows/Tests/badge.svg" alt="GitHub 构建" style="max-width: 100%;"></a>
+<a href="https://codecov.io/gh/apache/airflow" rel="nofollow"><img src="https://camo.githubusercontent.com/659c06fea8317cdc9cdaeb8d7313fbf700e80bf680db34a4ea39a6fa63f394e0/68747470733a2f2f636f6465636f762e696f2f67682f6170616368652f616972666c6f772f67726170682f62616467652e7376673f746f6b656e3d57644c4b6c4b484f4155" alt="覆盖状态" data-canonical-src="https://codecov.io/gh/apache/airflow/graph/badge.svg?token=WdLKlKHOAU" style="max-width: 100%;"></a>
+<a href="https://www.apache.org/licenses/LICENSE-2.0.txt" rel="nofollow"><img src="https://camo.githubusercontent.com/5ae6285fbec190e6594364f51eb5d45a181249ea6f57193b21eaaf69a65e2f30/68747470733a2f2f696d672e736869656c64732e696f2f3a6c6963656e73652d417061636865253230322d626c75652e737667" alt="执照" data-canonical-src="https://img.shields.io/:license-Apache%202-blue.svg" style="max-width: 100%;"></a>
+<a href="https://pypi.org/project/apache-airflow/" rel="nofollow"><img src="https://camo.githubusercontent.com/00d99f82bf628738b755cb5e9de671cc98cac40a5e94e826a8fdb4affd0ed09a/68747470733a2f2f696d672e736869656c64732e696f2f707970692f707976657273696f6e732f6170616368652d616972666c6f772e737667" alt="PyPI - Python 版本" data-canonical-src="https://img.shields.io/pypi/pyversions/apache-airflow.svg" style="max-width: 100%;"></a>
+<a href="https://hub.docker.com/r/apache/airflow" rel="nofollow"><img src="https://camo.githubusercontent.com/0da0e6bd73098320c39f640a14c772d4c3458ca876c553907ce870f3603e358a/68747470733a2f2f696d672e736869656c64732e696f2f646f636b65722f70756c6c732f6170616368652f616972666c6f772e737667" alt="Docker 拉取" data-canonical-src="https://img.shields.io/docker/pulls/apache/airflow.svg" style="max-width: 100%;"></a>
+<a href="https://hub.docker.com/r/apache/airflow" rel="nofollow"><img src="https://camo.githubusercontent.com/faca031ac28f81183338bd0a8564a36bb603e6ad731a7b0b3c4ebaf6fdc2790c/68747470733a2f2f696d672e736869656c64732e696f2f646f636b65722f73746172732f6170616368652f616972666c6f772e737667" alt="码头之星" data-canonical-src="https://img.shields.io/docker/stars/apache/airflow.svg" style="max-width: 100%;"></a>
+<a href="https://pypi.org/project/apache-airflow/" rel="nofollow"><img src="https://camo.githubusercontent.com/178099cde196974b25a2311c7d17db1d12603cb254e4189402e4f5672799407e/68747470733a2f2f696d672e736869656c64732e696f2f707970692f646d2f6170616368652d616972666c6f77" alt="PyPI——下载" data-canonical-src="https://img.shields.io/pypi/dm/apache-airflow" style="max-width: 100%;"></a>
+<a href="https://artifacthub.io/packages/search?repo=apache-airflow" rel="nofollow"><img src="https://camo.githubusercontent.com/08114525a1f326da24632f2630e07f0e5af0653efde2644e75c46e092952d626/68747470733a2f2f696d672e736869656c64732e696f2f656e64706f696e743f75726c3d68747470733a2f2f61727469666163746875622e696f2f62616467652f7265706f7369746f72792f6170616368652d616972666c6f77" alt="神器中心" data-canonical-src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/apache-airflow" style="max-width: 100%;"></a>
+<a href="https://github.com/psf/black"><img src="https://camo.githubusercontent.com/7d770c433d6198d89f8c1e2f187b904a9721d176259d0e97157337741cc8e837/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f636f64652532307374796c652d626c61636b2d3030303030302e737667" alt="代码风格：黑色" data-canonical-src="https://img.shields.io/badge/code%20style-black-000000.svg" style="max-width: 100%;"></a>
+<a href="https://twitter.com/ApacheAirflow" rel="nofollow"><img src="https://camo.githubusercontent.com/53ce5a6b2cb3ac2ed78b03877e1aba48ecb04f7ac75cec2340a498a6cc2d191a/68747470733a2f2f696d672e736869656c64732e696f2f747769747465722f666f6c6c6f772f417061636865416972666c6f772e7376673f7374796c653d736f6369616c266c6162656c3d466f6c6c6f77" alt="推特关注" data-canonical-src="https://img.shields.io/twitter/follow/ApacheAirflow.svg?style=social&amp;label=Follow" style="max-width: 100%;"></a>
+<a href="https://s.apache.org/airflow-slack" rel="nofollow"><img src="https://camo.githubusercontent.com/5ade1fd1e76a6ab860802cdd2941fe2501e2ca2cb534e5d8968dbf864c13d33d/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f736c61636b2d6a6f696e5f636861742d77686974652e7376673f6c6f676f3d736c61636b267374796c653d736f6369616c" alt="Slack 状态" data-canonical-src="https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&amp;style=social" style="max-width: 100%;"></a>
+<a href="https://github.com/apache/airflow/graphs/contributors"><img src="https://camo.githubusercontent.com/4c07215590f82c6b3dd7ab347a0fd6d34fc900fa019d5f060ca23fb30c18d390/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f636f6e7472696275746f72732f6170616368652f616972666c6f77" alt="贡献者" data-canonical-src="https://img.shields.io/github/contributors/apache/airflow" style="max-width: 100%;"></a>
+<a href="https://ossrank.com/p/6" rel="nofollow"><img src="https://camo.githubusercontent.com/60c292c0a6970c40a3b01675d43207b7e0868eb3b4fc9ca6c90e8047b942f6c1/68747470733a2f2f736869656c64732e696f2f656e64706f696e743f75726c3d68747470733a2f2f6f737372616e6b2e636f6d2f736869656c642f36" alt="OSS排名" data-canonical-src="https://shields.io/endpoint?url=https://ossrank.com/shield/6" style="max-width: 100%;"></a></p>
+<themed-picture data-catalyst-inline="true" data-catalyst=""><picture width="500">
+  <img src="https://github.com/apache/airflow/raw/19ebcac2395ef9a6b6ded3a2faa29dc960c1e635/docs/apache-airflow/img/logos/wordmark_1.png?raw=true" alt="Apache Airflow 徽标" style="visibility:visible;max-width:100%;">
+</picture></themed-picture>
+<p dir="auto"><a href="https://airflow.apache.org/docs/apache-airflow/stable/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Apache Airflow</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">（或简称 Airflow）是一个以编程方式编写、安排和监控工作流程的平台。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">当工作流被定义为代码时，它们变得更加可维护、可版本化、可测试和协作。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">使用 Airflow 将工作流编写为任务的有向无环图 (DAG)。Airflow 调度程序会在遵循指定依赖项的同时在一组工作器上执行您的任务。丰富的命令行实用程序使在 DAG 上执行复杂的操作变得轻而易举。丰富的用户界面让您可以轻松地可视化生产中运行的管道、监控进度并在需要时解决问题。</font></font></p>
+
+
+
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">目录</font></font></strong></p>
+<ul dir="auto">
+<li><a href="#project-focus"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">项目重点</font></font></a></li>
+<li><a href="#principles"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">原则</font></font></a></li>
+<li><a href="#requirements"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">要求</font></font></a></li>
+<li><a href="#getting-started"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">入门</font></font></a></li>
+<li><a href="#installing-from-pypi"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">从 PyPI 安装</font></font></a></li>
+<li><a href="#official-source-code"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">官方源码</font></font></a></li>
+<li><a href="#convenience-packages"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">便利套餐</font></font></a></li>
+<li><a href="#user-interface"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">用户界面</font></font></a></li>
+<li><a href="#semantic-versioning"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">语义版本控制</font></font></a></li>
+<li><a href="#version-life-cycle"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">版本生命周期</font></font></a></li>
+<li><a href="#support-for-python-and-kubernetes-versions"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">支持 Python 和 Kubernetes 版本</font></font></a></li>
+<li><a href="#base-os-support-for-reference-airflow-images"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">基本操作系统对参考 Airflow 图像的支持</font></font></a></li>
+<li><a href="#approach-to-dependencies-of-airflow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">气流依赖性方法</font></font></a></li>
+<li><a href="#contributing"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">贡献</font></font></a></li>
+<li><a href="#voting-policy"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">投票政策</font></font></a></li>
+<li><a href="#who-uses-apache-airflow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">谁使用 Apache Airflow？</font></font></a></li>
+<li><a href="#who-maintains-apache-airflow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">谁维护 Apache Airflow？</font></font></a></li>
+<li><a href="#what-goes-into-the-next-release"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">下一个版本会发布什么内容？</font></font></a></li>
+<li><a href="#can-i-use-the-apache-airflow-logo-in-my-presentation"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">我可以在演示文稿中使用 Apache Airflow 徽标吗？</font></font></a></li>
+<li><a href="#airflow-merchandise"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">气流商品</font></font></a></li>
+<li><a href="#links"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">链接</font></font></a></li>
+<li><a href="#sponsors"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">赞助商</font></font></a></li>
+</ul>
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">项目重点</font></font></h2><a id="user-content-project-focus" class="anchor" aria-label="永久链接：项目焦点" href="#project-focus"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow 最适合静态且变化缓慢的工作流。当 DAG 结构在每次运行中都相似时，它可以明确工作单元和连续性。其他类似项目包括</font></font><a href="https://github.com/spotify/luigi"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Luigi</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">、</font></font><a href="https://oozie.apache.org/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Oozie</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">和</font></font><a href="https://azkaban.github.io/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Azkaban</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow 通常用于处理数据，但其认为任务理想情况下应该是幂等的（即任务的结果将是相同的，并且不会在目标系统中创建重复的数据），并且不应将大量数据从一个任务传递到下一个任务（尽管任务可以使用 Airflow 的</font></font><a href="https://airflow.apache.org/docs/apache-airflow/stable/concepts/xcoms.html" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">XCom 功能</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">传递元数据）。对于大容量、数据密集型任务，最佳做法是委托给专门从事此类工作的外部服务。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow 不是流式解决方案，但它通常用于处理实时数据，批量从流中提取数据。</font></font></p>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">原则</font></font></h2><a id="user-content-principles" class="anchor" aria-label="永久链接：原则" href="#principles"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">动态</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：气流管道是配置为代码 (Python)，允许动态管道生成。这允许编写动态实例化管道的代码。</font></font></li>
+<li><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">可扩展</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：轻松定义您自己的操作符、执行器并扩展库，以使其适合适合您的环境的抽象级别。</font></font></li>
+<li><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">优雅</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：气流管道简洁、明确。使用强大的</font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Jinja</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">模板引擎将脚本参数化内置于 Airflow 的核心中</font><font style="vertical-align: inherit;">。</font></font></li>
+<li><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">可扩展</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：Airflow 具有模块化架构，并使用消息队列来编排任意数量的工作人员。</font></font></li>
+</ul>
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">要求</font></font></h2><a id="user-content-requirements" class="anchor" aria-label="永久链接：要求" href="#requirements"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Apache Airflow 经过以下测试：</font></font></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">主要版本（开发）</font></font></th>
+<th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">稳定版本（2.9.1）</font></font></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Python</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">3.8、3.9、3.10、3.11、3.12</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">3.8、3.9、3.10、3.11、3.12</font></font></td>
+</tr>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">平台</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">AMD64/ARM64(*)</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">AMD64/ARM64(*)</font></font></td>
+</tr>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Kubernetes</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.26、1.27、1.28、1.29、1.30</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.26, 1.27, 1.28, 1.29</font></font></td>
+</tr>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PostgreSQL</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">12、13、14、15、16</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">12、13、14、15、16</font></font></td>
+</tr>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">MySQL</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">8.0、8.4、创新</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">8.0、创新</font></font></td>
+</tr>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">SQLite</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">3.15.0+</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">3.15.0+</font></font></td>
+</tr>
+</tbody>
+</table>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">* 实验性的</font></font></p>
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">注意</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：MySQL 5.x 版本无法运行多个调度程序，或者在运行多个调度程序时存在限制 - 请参阅</font></font><a href="https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/scheduler.html" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">调度程序文档</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。MariaDB 未经测试/推荐。</font></font></p>
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">注意</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：SQLite 用于 Airflow 测试。请勿在生产中使用它。我们建议使用最新稳定版本的 SQLite 进行本地开发。</font></font></p>
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">注意</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：Airflow 目前可以在符合 POSIX 标准的操作系统上运行。为了进行开发，它会定期在相当现代的 Linux 发行版和最新版本的 macOS 上进行测试。在 Windows 上，您可以通过 WSL2（适用于 Linux 2 的 Windows 子系统）或 Linux 容器运行它。添加 Windows 支持的工作通过</font></font><a href="https://github.com/apache/airflow/issues/10388" data-hovercard-type="issue" data-hovercard-url="/apache/airflow/issues/10388/hovercard"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">#10388</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">进行跟踪，但这并不是一个高优先级。您应该仅使用基于 Linux 的发行版作为“生产”执行环境，因为这是唯一受支持的环境。我们的 CI 测试中使用的以及</font></font><a href="https://hub.docker.com/p/apache/airflow" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">社区管理的 DockerHub 映像</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">中使用的唯一发行版</font><font style="vertical-align: inherit;">是
+</font></font><code>Debian Bookworm</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">.如果您想要构建自定义映像</font><font style="vertical-align: inherit;">，我们还支持旧版</font></font><code>Debian Bullseye</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">基础映像，但它已被弃用，并且 Airflow 2.9.1 附带的 Dockerfile 中的选项将被删除，因此建议您切换到</font></font><code>Debian Bookworm</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">自定义映像。</font></font></p>
+
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">入门</font></font></h2><a id="user-content-getting-started" class="anchor" aria-label="永久链接：开始使用" href="#getting-started"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">访问 Airflow 官方网站文档（最新</font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">稳定</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">版本）以获取有关
+</font></font><a href="https://airflow.apache.org/docs/apache-airflow/stable/installation/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">安装 Airflow</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">、
+</font></font><a href="https://airflow.apache.org/docs/apache-airflow/stable/start.html" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">入门</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">或浏览更完整</font></font><a href="https://airflow.apache.org/docs/apache-airflow/stable/tutorial/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">教程的</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">帮助。</font></font></p>
+<blockquote>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">注意：如果您正在寻找主分支（最新开发分支）的文档：您可以在</font></font><a href="https://s.apache.org/airflow-docs/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">s.apache.org/airflow-docs</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">上找到它。</font></font></p>
+</blockquote>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">有关气流改进建议 (AIP) 的更多信息，请访问</font></font><a href="https://cwiki.apache.org/confluence/display/AIRFLOW/Airflow+Improvement+Proposals" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow Wiki</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">相关项目的文档，例如提供程序包、Docker 映像、Helm Chart，您可以在</font></font><a href="https://airflow.apache.org/docs/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">文档索引</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">中找到它。</font></font></p>
+
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">从 PyPI 安装</font></font></h2><a id="user-content-installing-from-pypi" class="anchor" aria-label="永久链接：从 PyPI 安装" href="#installing-from-pypi"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">我们将 Apache Airflow 作为</font></font><code>apache-airflow</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PyPI 中的软件包发布。但是，安装它有时可能会很棘手，因为 Airflow 既是库又是应用程序。库通常保持其依赖项开放，而应用程序通常固定它们，但我们不应该同时做这两项或同时做这两项。我们决定尽可能保持依赖项开放（在</font></font><code>pyproject.toml</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">），以便用户可以根据需要安装不同版本的库。这意味着</font></font><code>pip install apache-airflow</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">有时会不起作用或会产生无法使用的 Airflow 安装。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"></font><code>constraints-main</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">但是，为了实现可重复安装，我们在孤立和分支</font><font style="vertical-align: inherit;">中保留了一组“已知可行”的约束文件</font></font><code>constraints-2-0</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。我们按主要/次要 Python 版本分别保留这些“已知可行”的约束文件。从 PyPI 安装 Airflow 时，您可以将它们用作约束文件。请注意，您必须在 URL 中指定正确的 Airflow 标签/版本/分支和 Python 版本。</font></font></p>
+<ol dir="auto">
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">仅安装 Airflow：</font></font></li>
+</ol>
+<blockquote>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">注意：</font></font><code>pip</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">目前官方仅支持安装。</font></font></p>
+</blockquote>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">虽然可以使用</font></font><a href="https://python-poetry.org" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Poetry</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">或
+</font></font><a href="https://pypi.org/project/pip-tools" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">pip-tools</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">等工具安装 Airflow ，但它们不共享相同的工作流程
+</font></font><code>pip</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">- 特别是在约束与需求管理方面。</font><font style="vertical-align: inherit;">目前不支持</font><font style="vertical-align: inherit;">通过</font></font><code>Poetry</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">或安装。</font></font><code>pip-tools</code><font style="vertical-align: inherit;"></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">已知问题</font></font><code>bazel</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">可能会导致在使用它安装 Airflow 时出现循环依赖。</font></font><code>pip</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">如果您遇到此类问题，请切换到。</font></font><code>Bazel</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">社区正在努力修复 _ 中的问题</font></font><code>this PR &lt;https://github.com/bazelbuild/rules_python/pull/1166&gt;</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">，因此 的新版本可能</font></font><code>bazel</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">会处理它。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">如果您希望使用这些工具安装 Airflow，则应使用约束文件并将其转换为您的工具所需的适当格式和工作流程。</font></font></p>
+<div class="highlight highlight-source-shell notranslate position-relative overflow-auto" dir="auto"><pre>pip install <span class="pl-s"><span class="pl-pds">'</span>apache-airflow==2.9.1<span class="pl-pds">'</span></span> \
+ --constraint <span class="pl-s"><span class="pl-pds">"</span>https://raw.githubusercontent.com/apache/airflow/constraints-2.9.1/constraints-3.8.txt<span class="pl-pds">"</span></span></pre><div class="zeroclipboard-container">
+    <clipboard-copy aria-label="Copy" class="ClipboardButton btn btn-invisible js-clipboard-copy m-2 p-0 tooltipped-no-delay d-flex flex-justify-center flex-items-center" data-copy-feedback="Copied!" data-tooltip-direction="w" value="pip install 'apache-airflow==2.9.1' \
+ --constraint &quot;https://raw.githubusercontent.com/apache/airflow/constraints-2.9.1/constraints-3.8.txt&quot;" tabindex="0" role="button">
+      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-copy js-clipboard-copy-icon">
+    <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path>
+</svg>
+      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-check js-clipboard-check-icon color-fg-success d-none">
+    <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"></path>
+</svg>
+    </clipboard-copy>
+  </div></div>
+<ol start="2" dir="auto">
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">使用附加程序安装（例如 postgres、google）</font></font></li>
+</ol>
+<div class="highlight highlight-source-shell notranslate position-relative overflow-auto" dir="auto"><pre>pip install <span class="pl-s"><span class="pl-pds">'</span>apache-airflow[postgres,google]==2.8.3<span class="pl-pds">'</span></span> \
+ --constraint <span class="pl-s"><span class="pl-pds">"</span>https://raw.githubusercontent.com/apache/airflow/constraints-2.9.1/constraints-3.8.txt<span class="pl-pds">"</span></span></pre><div class="zeroclipboard-container">
+    <clipboard-copy aria-label="Copy" class="ClipboardButton btn btn-invisible js-clipboard-copy m-2 p-0 tooltipped-no-delay d-flex flex-justify-center flex-items-center" data-copy-feedback="Copied!" data-tooltip-direction="w" value="pip install 'apache-airflow[postgres,google]==2.8.3' \
+ --constraint &quot;https://raw.githubusercontent.com/apache/airflow/constraints-2.9.1/constraints-3.8.txt&quot;" tabindex="0" role="button">
+      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-copy js-clipboard-copy-icon">
+    <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path>
+</svg>
+      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-check js-clipboard-check-icon color-fg-success d-none">
+    <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"></path>
+</svg>
+    </clipboard-copy>
+  </div></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">有关安装提供程序包的信息，请检查
+</font></font><a href="http://airflow.apache.org/docs/apache-airflow-providers/index.html" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">提供程序</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。</font></font></p>
+
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">官方源码</font></font></h2><a id="user-content-official-source-code" class="anchor" aria-label="永久链接：官方源代码" href="#official-source-code"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Apache Airflow 是</font></font><a href="https://www.apache.org" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Apache Software Foundation</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;"> (ASF) 项目，我们的官方源代码发布：</font></font></p>
+<ul dir="auto">
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">遵循</font></font><a href="https://www.apache.org/legal/release-policy.html" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">ASF 发布政策</font></font></a></li>
+<li><font style="vertical-align: inherit;"><a href="https://downloads.apache.org/airflow" rel="nofollow"><font style="vertical-align: inherit;">可以从ASF 分发目录</font></a><font style="vertical-align: inherit;">下载</font></font><a href="https://downloads.apache.org/airflow" rel="nofollow"><font style="vertical-align: inherit;"></font></a></li>
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">由发布经理加密签名</font></font></li>
+<li><font style="vertical-align: inherit;"><a href="https://www.apache.org/legal/release-policy.html#release-approval" rel="nofollow"><font style="vertical-align: inherit;">由 PMC 成员在发布批准流程</font></a><font style="vertical-align: inherit;">中正式投票
+</font></font><a href="https://www.apache.org/legal/release-policy.html#release-approval" rel="nofollow"><font style="vertical-align: inherit;"></font></a></li>
+</ul>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">遵循 ASF 规则，发布的源代码包必须足以让用户构建和测试该版本，前提是他们有权访问适当的平台和工具。</font></font></p>
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">便利套餐</font></font></h2><a id="user-content-convenience-packages" class="anchor" aria-label="永久链接：便利套餐" href="#convenience-packages"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">还有其他安装和使用 Airflow 的方法。这些是“方便”的方法 - 它们不是 所声明的“官方版本” </font></font><code>ASF Release Policy</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">，但不想自己构建软件的用户可以使用它们。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">这些是 - 按照人们安装 Airflow 的最常见方式的顺序排列：</font></font></p>
+<ul dir="auto">
+<li><a href="https://pypi.org/project/apache-airflow/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PyPI 发布</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">以使用标准</font></font><code>pip</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">工具安装 Airflow</font></font></li>
+<li><a href="https://hub.docker.com/r/apache/airflow" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Docker 镜像</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">通过
+</font></font><code>docker</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">工具安装 airflow，并在 Kubernetes、Helm Charts、、等中使用它们。</font></font><code>docker-compose</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">您可以在</font><a href="https://airflow.apache.org/docs/docker-stack/index.html" rel="nofollow"><font style="vertical-align: inherit;">最新文档</font></a></font><code>docker swarm</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">中阅读有关使用、自定义和扩展镜像的更多信息
+，并在</font><a href="https://airflow.apache.org/docs/docker-stack/index.html" rel="nofollow"><font style="vertical-align: inherit;">镜像</font></a><font style="vertical-align: inherit;">文档中了解内部细节</font><font style="vertical-align: inherit;">。</font></font><a href="https://airflow.apache.org/docs/docker-stack/index.html" rel="nofollow"><font style="vertical-align: inherit;"></font></a><font style="vertical-align: inherit;"></font><a href="https://airflow.apache.org/docs/docker-stack/index.html" rel="nofollow"><font style="vertical-align: inherit;"></font></a><font style="vertical-align: inherit;"></font></li>
+<li><a href="https://github.com/apache/airflow/tags"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">GitHub 中的标签</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">用于检索用于通过 git 生成官方源包的 git 项目源</font></font></li>
+</ul>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">所有这些工件都不是官方发布的，但它们是使用官方发布的源代码准备的。其中一些工件是“开发”或“预发布”的，它们根据 ASF 政策明确标记。</font></font></p>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">用户界面</font></font></h2><a id="user-content-user-interface" class="anchor" aria-label="永久链接：用户界面" href="#user-interface"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li>
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">DAG</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：您环境中所有 DAG 的概览。</font></font></p>
+<p dir="auto"><a target="_blank" rel="noopener noreferrer nofollow" href="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/dags.png"><img src="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/dags.png" alt="有向无环图" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">网格</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：跨越时间的 DAG 的网格表示。</font></font></p>
+<p dir="auto"><a target="_blank" rel="noopener noreferrer nofollow" href="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/grid.png"><img src="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/grid.png" alt="网格" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">图表</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：DAG 的依赖关系及其特定运行的当前状态的可视化。</font></font></p>
+<p dir="auto"><a target="_blank" rel="noopener noreferrer nofollow" href="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/graph.png"><img src="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/graph.png" alt="图形" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">任务持续时间</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：一段时间内花在不同任务上的总时间。</font></font></p>
+<p dir="auto"><a target="_blank" rel="noopener noreferrer nofollow" href="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/duration.png"><img src="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/duration.png" alt="任务持续时间" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">甘特图</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：一天的持续时间和重叠。</font></font></p>
+<p dir="auto"><a target="_blank" rel="noopener noreferrer nofollow" href="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/gantt.png"><img src="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/gantt.png" alt="甘特图" style="max-width: 100%;"></a></p>
+</li>
+<li>
+<p dir="auto"><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">代码</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：快速查看 DAG 源代码。</font></font></p>
+<p dir="auto"><a target="_blank" rel="noopener noreferrer nofollow" href="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/code.png"><img src="https://raw.githubusercontent.com/apache/airflow/main/docs/apache-airflow/img/code.png" alt="代码" style="max-width: 100%;"></a></p>
+</li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">语义版本控制</font></font></h2><a id="user-content-semantic-versioning" class="anchor" aria-label="永久链接：语义版本控制" href="#semantic-versioning"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">从 Airflow 2.0.0 开始，我们支持</font><font style="vertical-align: inherit;">对所有发布的软件包采用严格的</font></font><a href="https://semver.org/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">SemVer方法。</font></font></a><font style="vertical-align: inherit;"></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">我们同意了一些特定规则，这些规则定义了不同软件包版本控制的细节：</font></font></p>
+<ul dir="auto">
+<li><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：SemVer 规则仅适用于核心 airflow（不包括对提供商的任何更改）。更改 Airflow 依赖项版本的限制本身并不是重大更改。</font></font></li>
+<li><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow 提供商</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：SemVer 规则仅适用于特定提供商代码的更改。 SemVer 软件包的主要版本和次要版本独立于 Airflow 版本。例如，</font></font><code>google 4.1.0</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">提供</font></font><code>amazon 3.0.3</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">者可以愉快地安装</font></font><code>Airflow 2.1.2</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">.如果提供程序和 Airflow 包之间存在交叉依赖性限制，它们会作为</font></font><code>install_requires</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">限制存在于提供程序中。我们的目标是保持提供程序与所有先前发布的 Airflow 2 版本的向后兼容性，但有时会出现重大更改，可能会使某些或所有提供程序指定最低 Airflow 版本。</font></font></li>
+<li><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow Helm Chart</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：SemVer 规则仅适用于图表中的更改。图表的 SemVer MAJOR 和 MINOR 版本独立于 Airflow 版本。我们的目标是保持 Helm Chart 与所有已发布的 Airflow 2 版本的向后兼容性，但某些新功能可能只能从特定的 Airflow 版本开始工作。然而，我们可能会限制 Helm Chart 依赖于最小的 Airflow 版本。</font></font></li>
+<li><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow API 客户端</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：它们的版本控制与 Airflow 版本无关。它们遵循自己的 SemVer 规则来处理重大更改和新功能 - 例如，这允许更改我们生成客户端的方式。</font></font></li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">版本生命周期</font></font></h2><a id="user-content-version-life-cycle" class="anchor" aria-label="永久链接：版本生命周期" href="#version-life-cycle"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Apache Airflow 版本生命周期：</font></font></p>
+
+
+<table>
+<thead>
+<tr>
+<th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">版本</font></font></th>
+<th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">当前补丁/小版本</font></font></th>
+<th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">状态</font></font></th>
+<th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">首次发布</font></font></th>
+<th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">有限支持</font></font></th>
+<th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">EOL/终止</font></font></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2.9.1</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">支持的</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2020 年 12 月 17 日</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">待定</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">待定</font></font></td>
+</tr>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.10</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.10.15</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">停产</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2018 年 8 月 27 日</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2020 年 12 月 17 日</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2021 年 6 月 17 日</font></font></td>
+</tr>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.9</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.9.0</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">停产</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2018 年 1 月 3 日</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2018 年 8 月 27 日</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2018 年 8 月 27 日</font></font></td>
+</tr>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.8</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.8.2</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">停产</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2017 年 3 月 19 日</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2018 年 1 月 3 日</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2018 年 1 月 3 日</font></font></td>
+</tr>
+<tr>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.7</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1.7.1.2</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">停产</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2016 年 3 月 28 日</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2017 年 3 月 19 日</font></font></td>
+<td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2017 年 3 月 19 日</font></font></td>
+</tr>
+</tbody>
+</table>
+
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">有限支持版本仅支持安全性和关键错误修复。 EOL 版本不会得到任何修复或支持。我们始终建议所有用户针对正在使用的任何主要版本运行最新的可用次要版本。我们</font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">强烈</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">建议您在 EOL 日期之前尽早升级到最新的 Airflow 主要版本。</font></font></p>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">支持 Python 和 Kubernetes 版本</font></font></h2><a id="user-content-support-for-python-and-kubernetes-versions" class="anchor" aria-label="永久链接：支持 Python 和 Kubernetes 版本" href="#support-for-python-and-kubernetes-versions"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">从 Airflow 2.0 开始，我们同意遵循某些规则来支持 Python 和 Kubernetes。这些规则基于 Python 和 Kubernetes 的官方发布时间表，并在
+</font></font><a href="https://devguide.python.org/#status-of-python-branches" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Python 开发人员指南</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">和
+</font></font><a href="https://kubernetes.io/docs/setup/release/version-skew-policy/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Kubernetes 版本偏差策略</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">中进行了很好的总结。</font></font></p>
+<ol dir="auto">
+<li>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">当 Python 和 Kubernetes 版本达到 EOL 时，我们将不再支持它们。除 Kubernetes 之外，如果两个主要云提供商仍然提供支持，则 Airflow 仍会支持某个版本。在 EOL 日期之后，我们在 main 中放弃了对这些 EOL 版本的支持，并且当我们发布 Airflow 的第一个新的 MINOR（如果没有新的 MINOR 版本，则为 MAJOR）时，它会被有效删除。例如，对于 Python 3.8，这意味着我们将在 2023 年 6 月 27 日之后放弃对 main 的支持，之后发布的 Airflow 的第一个 MAJOR 或 MINOR 版本将不再支持它。</font></font></p>
+</li>
+<li>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">在 Python/Kubernetes 正式发布后，我们会在主要部分支持其新版本，一旦我们使其在我们的 CI 管道中工作（这可能不会立即发生，因为依赖项主要追赶新版本的 Python），我们就会根据有效的 CI 设置在 Airflow 中发布新的图像/支持。</font></font></p>
+</li>
+<li>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">此政策是尽力而为的，这意味着如果情况需要，我们可能会提前终止支持。</font></font></p>
+</li>
+</ol>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">基本操作系统对参考 Airflow 图像的支持</font></font></h2><a id="user-content-base-os-support-for-reference-airflow-images" class="anchor" aria-label="永久链接：参考 Airflow 镜像的基本操作系统支持" href="#base-os-support-for-reference-airflow-images"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow 社区提供了方便打包的容器镜像，每当我们发布 Apache Airflow 版本时，这些镜像都会发布。这些镜像包含：</font></font></p>
+<ul dir="auto">
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">安装 Airflow 所需的基本操作系统（稳定的 Debian 操作系统）</font></font></li>
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">在发布 Airflow MINOR 版本时支持的版本中安装基本 Python（例如，2.3 和 2.2 版可能有不同的版本）</font></font></li>
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">连接到受支持的数据库所需的库（同样，受支持的数据库集取决于 Airflow 的 MINOR 版本）</font></font></li>
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">预定义的一组流行提供程序（有关详细信息，请参阅 Dockerfile </font></font><a href="https://raw.githubusercontent.com/apache/airflow/main/Dockerfile" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">）</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。</font></font></li>
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">可以构建自己的自定义图像，用户可以选择自己的一组提供程序和库（请参阅</font></font><a href="https://airflow.apache.org/docs/docker-stack/build.html" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">构建图像</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">）</font></font></li>
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">将来，Airflow 可能还会支持无需安装提供程序或数据库客户端的“精简”版本</font></font></li>
+</ul>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">基础操作系统映像的版本是 Debian 的稳定版本。 Airflow 支持使用所有当前活动的稳定版本 - 只要所有 Airflow 依赖项都支持构建，并且我们设置了用于构建和测试操作系统版本的 CI 管道。在之前稳定版本操作系统的常规支持结束之前大约 6 个月，Airflow 将发布的映像切换为使用最新支持的操作系统版本。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">例如，由于</font></font><code>Debian Buster</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">生命周期结束时间为 2022 年 8 月，Airflow 将分支中的镜像切换为 2022 年 2 月/3 月</font></font><code>main</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">使用。</font></font><code>Debian Bullseye</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">切换发生后，该版本将在下一个 MINOR 版本中使用。如果使用 Bullseye switch-2.3.0 版本</font></font><code>Debian Bullseye</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。先前 MINOR 版本中发布的映像继续使用该 MINOR 版本的所有其他版本所使用的版本。从</font></font><code>Debian Bullseye</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">到 的</font><font style="vertical-align: inherit;">类似切换</font></font><code>Debian Bookworm</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">已在 2023 年 10 月发布 2.8.0 之前实现，并且</font></font><code>Debian Bookworm</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">将是 Airflow 2.9.0 起支持的唯一选项。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">用户将继续能够使用稳定的 Debian 版本构建他们的图像，直到常规支持结束，并且图像的构建和验证在我们的 CI 中进行，但没有使用该图像在分支中执行单元测试</font></font><code>main</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。</font></font></p>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">气流依赖性方法</font></font></h2><a id="user-content-approach-to-dependencies-of-airflow" class="anchor" aria-label="永久链接：Airflow 依赖关系的方法" href="#approach-to-dependencies-of-airflow"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow 具有许多依赖项 - 直接依赖项和传递依赖项，而且 Airflow 既是库又是应用程序，因此我们对依赖项的策略必须包括应用程序安装的稳定性，也包括为开发 DAG 的用户安装较新版本依赖项的能力。我们开发了一种方法，用于</font></font><code>constraints</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">确保可以重复安装 airflow，同时我们不限制用户升级大多数依赖项。因此，我们决定默认不对 Airflow 依赖项的版本进行上限限制，除非我们有充分的理由相信由于依赖项的重要性以及升级特定依赖项所涉及的风险而需要对它们进行上限限制。我们还对我们知道会导致问题的依赖项进行了上限限制。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">我们的约束机制负责自动查找和升级所有非上限依赖项（前提是所有测试都通过）。我们的</font></font><code>main</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">构建失败将表明是否存在破坏我们测试的依赖项版本 - 表明我们应该对它们进行上限绑定，或者我们应该修复我们的代码/测试以解决来自这些依赖项的上游更改。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">每当我们对这样的依赖关系进行上限时，我们应该总是注释为什么我们这样做——即我们应该有一个很好的理由为什么依赖关系是上限。另外我们还应该提到解除绑定的条件是什么。</font></font></p>
+<div class="markdown-heading" dir="auto"><h3 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow Core 依赖关系的方法</font></font></h3><a id="user-content-approach-for-dependencies-for-airflow-core" class="anchor" aria-label="永久链接：Airflow Core 依赖关系的方法" href="#approach-for-dependencies-for-airflow-core"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">这些依赖关系在 中维护</font></font><code>pyproject.toml</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">我们认为很少有依赖项足够重要，可以在默认情况下对它们进行上限限制，因为众所周知，它们遵循可预测的版本控制方案，并且我们知道这些依赖项的新版本很可能会带来重大更改。我们承诺定期审查并尝试升级到发布的较新版本的依赖项，但这是手动过程。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">重要的依赖项是：</font></font></p>
+<ul dir="auto">
+<li><code>SQLAlchemy</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：特定 MINOR 版本的上限（众所周知，SQLAlchemy 会删除弃用的内容并引入重大更改，尤其是对不同数据库的支持会有所不同，并且变化速度也不同）</font></font></li>
+<li><code>Alembic</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：以可预测且高效的方式处理迁移非常重要。它是与 SQLAlchemy 一起开发的。我们的经验是，Alembic 在 MINOR 版本中非常稳定</font></font></li>
+<li><code>Flask</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：我们使用 Flask 作为 Web UI 和 API 的骨干。我们知道 Flask 的主要版本很可能会在这些版本中引入重大更改，因此将其限制为主要版本是有意义的</font></font></li>
+<li><code>werkzeug</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：已知该库在新版本中会导致问题。它与 Flask 库紧密耦合，我们应该一起更新它们</font></font></li>
+<li><code>celery</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：Celery 是 Airflow 的重要组成部分，因为它用于 CeleryExecutor （和类似的）。 Celery
+</font></font><a href="https://docs.celeryq.dev/en/stable/contributing.html?highlight=semver#versions" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">遵循 SemVer</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">，因此我们应该将其上限限制为下一个主要版本。另外，当我们升级库的较高版本时，我们应该确保 Celery Provider 最低 Airflow 版本已更新。</font></font></li>
+<li><code>kubernetes</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">：Kubernetes 是 Airflow 的一个关键组件，因为它用于 KubernetesExecutor（和类似组件）。Kubernetes Python 库</font></font><a href="https://github.com/kubernetes-client/python#compatibility"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">遵循 SemVer</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">，因此我们应该将其上限设置为下一个主要版本。此外，当我们升级库的上限版本时，我们应该确保 Kubernetes Provider 最低 Airflow 版本已更新。</font></font></li>
+</ul>
+<div class="markdown-heading" dir="auto"><h3 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow Providers 和 extras 中的依赖项处理方法</font></font></h3><a id="user-content-approach-for-dependencies-in-airflow-providers-and-extras" class="anchor" aria-label="永久链接：Airflow Providers 和 extras 中依赖关系的方法" href="#approach-for-dependencies-in-airflow-providers-and-extras"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow 的主要部分是 Airflow Core，但 Airflow 的强大功能还来自于许多扩展核心功能并单独发布的提供程序，即使我们为了方便起见将它们（目前）保存在同一个 monorepo 中。您可以在
+</font></font><a href="https://airflow.apache.org/docs/apache-airflow-providers/index.html" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">提供程序文档中阅读有关提供程序的更多信息。我们还在</font></font></a><font style="vertical-align: inherit;"></font><a href="https://github.com/apache/airflow/blob/main/PROVIDERS.rst"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">提供程序</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">文档中实施了一套用于维护和发布社区管理的提供程序的政策以及针对社区与第三方提供程序的方法</font><font style="vertical-align: inherit;">。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">这些</font></font><code>extras</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">和依赖关系</font><font style="vertical-align: inherit;">由每个提供商</font></font><code>providers</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">维护。</font></font><code>provider.yaml</code><font style="vertical-align: inherit;"></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">默认情况下，我们不应该为提供商设置依赖上限，但是每个提供商的维护者可能会决定添加额外的限制（并通过评论证明其合理性）。</font></font></p>
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">贡献</font></font></h2><a id="user-content-contributing" class="anchor" aria-label="永久链接：贡献" href="#contributing"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">想要帮助构建 Apache Airflow？查看我们的</font></font><a href="https://github.com/apache/airflow/blob/main/contributing-docs/README.rst"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">贡献文档</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Apache Airflow 的官方 Docker（容器）映像在</font></font><a href="/apache/airflow/blob/main/dev/breeze/doc/ci/02_images.md"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">images</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">中进行了描述。</font></font></p>
+
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">投票政策</font></font></h2><a id="user-content-voting-policy" class="anchor" aria-label="永久链接：投票政策" href="#voting-policy"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">提交需要来自非作者的提交者的 +1 票</font></font></li>
+<li><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">当我们进行 AIP 投票时，PMC 成员和提交者的投票都</font></font><code>+1s</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">被视为具有约束力的投票。</font></font></li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">谁使用 Apache Airflow？</font></font></h2><a id="user-content-who-uses-apache-airflow" class="anchor" aria-label="永久链接：谁使用 Apache Airflow？" href="#who-uses-apache-airflow"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"></font><a href="https://github.com/apache/airflow/blob/main/INTHEWILD.md"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">我们知道大约有 500 个组织在野外</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">使用 Apache Airflow（但可能还有更多）
+ </font><font style="vertical-align: inherit;">。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">如果您使用 Airflow - 请随时制作 PR 将您的组织添加到列表中。</font></font></p>
+
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">谁维护 Apache Airflow？</font></font></h2><a id="user-content-who-maintains-apache-airflow" class="anchor" aria-label="永久链接：谁维护 Apache Airflow？" href="#who-maintains-apache-airflow"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"></font><a href="https://github.com/apache/airflow/graphs/contributors"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Airflow 是社区</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">的工作</font><font style="vertical-align: inherit;">，但</font></font><a href="https://people.apache.org/committers-by-project.html#airflow" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">核心提交者/维护者</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+负责审查和合并 PR，以及围绕新功能请求引导对话。如果您想成为维护者，请查看 Apache Airflow
+</font></font><a href="https://github.com/apache/airflow/blob/main/COMMITTERS.rst#guidelines-to-become-an-airflow-committer"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">提交者要求</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。</font></font></p>
+
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">下一个版本会发布什么内容？</font></font></h2><a id="user-content-what-goes-into-the-next-release" class="anchor" aria-label="永久链接：下一个版本会包含哪些内容？" href="#what-goes-into-the-next-release"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">通常，您会看到分配给 Airflow 版本的特定里程碑的问题，或者合并到主分支的 PR，您可能想知道合并的 PR 将在哪个版本中发布，或者修复的问题将在哪个版本中发布这个问题的答案和往常一样——这取决于不同的场景。 PR 和 Issue 的答案是不同的。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">为了添加一些上下文，我们遵循</font><a href="https://airflow.apache.org/docs/apache-airflow/stable/release-process.html" rel="nofollow"><font style="vertical-align: inherit;">Airflow 发布流程</font></a><font style="vertical-align: inherit;">中描述的
+</font></font><a href="https://semver.org/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Semver</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">版本控制方案。更多细节在本自述文件的</font><a href="#semantic-versioning"><font style="vertical-align: inherit;">语义版本控制</font></a><font style="vertical-align: inherit;">章节中进行了详细解释</font><font style="vertical-align: inherit;">，但简而言之，我们有</font><font style="vertical-align: inherit;">Airflow 的版本。</font></font><a href="https://airflow.apache.org/docs/apache-airflow/stable/release-process.html" rel="nofollow"><font style="vertical-align: inherit;"></font></a><font style="vertical-align: inherit;"></font><a href="#semantic-versioning"><font style="vertical-align: inherit;"></font></a><font style="vertical-align: inherit;"></font><code>MAJOR.MINOR.PATCH</code><font style="vertical-align: inherit;"></font></p>
+<ul dir="auto">
+<li><code>MAJOR</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">如果发生重大更改，版本会增加</font></font></li>
+<li><code>MINOR</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">添加新功能时版本会增加</font></font></li>
+<li><code>PATCH</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">当仅有错误修复和文档更改时，版本会增加</font></font></li>
+</ul>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">通常，我们会</font></font><code>MINOR</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">从以 MINOR 版本命名的分支发布 Airflow 版本。例如，
+发布版从</font><font style="vertical-align: inherit;">分支</font></font><code>2.7.*</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">发布，</font><font style="vertical-align: inherit;">发布版从分支发布</font><font style="vertical-align: inherit;">
+，等等。</font></font><code>v2-7-stable</code><font style="vertical-align: inherit;"></font><code>2.8.*</code><font style="vertical-align: inherit;"></font><code>v2-8-stable</code><font style="vertical-align: inherit;"></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">在我们的发布周期中的大多数时间，当下一个</font></font><code>MINOR</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">分支的分支尚未创建时，所有合并到的 PR </font></font><code>main</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">（除非它们被恢复）将找到进入下一个</font></font><code>MINOR</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">版本的方式。例如，如果最后一个版本是</font></font><code>2.7.3</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">并且</font></font><code>v2-8-stable</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">尚未创建分支，则下一个</font></font><code>MINOR</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">版本是</font></font><code>2.8.0</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">并且合并到 main 的所有 PR 都将在 中发布</font></font><code>2.8.0</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。有一段短暂的时间，我们会削减一个新的</font></font><code>MINOR</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">发布分支，并准备 alpha、beta、RC 候选版本，</font></font><code>2.NEXT_MINOR.0</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">其中 PR 合并到 main 的版本只会在下一个</font></font><code>MINOR</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">版本中发布。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">但是，一些 PR（错误修复和仅文档更改）在合并时，可以挑选到当前</font></font><code>MINOR</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">分支并在下一个</font></font><code>PATCHLEVEL</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">版本中发布 - 例如当</font></font><code>v2-7-stable</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+分支中最后发布的版本是时</font></font><code>2.7.2</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。提交者可以将主分支中的一些 PR 标记为</font></font><code>2.7.3</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">里程碑，发布经理将尝试将它们挑选到发布分支中。如果成功，它们将在 中发布</font></font><code>2.7.3</code><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。关于挑选的最终决定由发布经理做出。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">用里程碑标记问题有点不同。维护者通常不会用里程碑标记问题，通常只在 PR 中标记。如果与该问题相关的 PR（以及“修复它”）按照上述流程合并并在特定版本中发布，则该问题将自动关闭，不会为该问题设置里程碑，您需要检查该 PR修复了该问题以查看它发布的版本。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">然而，有时维护人员会用特定的里程碑来标记问题，这意味着该问题对于成为准备发布时要查看的候选者很重要。由于这是一个开源项目，基本上所有贡献者都自愿投入时间，因此不能保证特定问题将在特定版本中得到解决。我们不想因为某些问题未修复而保留发布，因此在这种情况下，发布经理会将此类未修复的问题重新分配到下一个里程碑，以防它们没有在当前版本中及时修复。因此，问题的里程碑更多的是应该关注它的意图，而不是承诺它将在版本中修复。</font></font></p>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">有关补丁级别版本的更多上下文和</font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">常见问题解答</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">可以在
+</font><font style="vertical-align: inherit;">存储库文件夹中的</font></font><a href="/apache/airflow/blob/main/dev/WHAT_GOES_INTO_THE_NEXT_RELEASE.md"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">下一版本</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">文档内容中找到。</font></font><code>dev</code><font style="vertical-align: inherit;"></font></p>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">我可以在演示文稿中使用 Apache Airflow 徽标吗？</font></font></h2><a id="user-content-can-i-use-the-apache-airflow-logo-in-my-presentation" class="anchor" aria-label="永久链接：我可以在演示文稿中使用 Apache Airflow 徽标吗？" href="#can-i-use-the-apache-airflow-logo-in-my-presentation"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">是的！请务必遵守 Apache 基金会</font></font><a href="https://www.apache.org/foundation/marks/#books" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">商标政策</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">和 Apache Airflow</font></font><a href="https://cwiki.apache.org/confluence/display/AIRFLOW/Brandbook" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">品牌手册</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。最新的徽标可以在</font></font><a href="https://github.com/apache/airflow/tree/main/docs/apache-airflow/img/logos/"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">此存储库</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">和 Apache Software Foundation</font></font><a href="https://www.apache.org/logos/about.html" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">网站</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">上找到。</font></font></p>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">气流商品</font></font></h2><a id="user-content-airflow-merchandise" class="anchor" aria-label="永久链接：气流商品" href="#airflow-merchandise"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">如果您想要 Apache Airflow 贴纸、T 恤等，请查看
+</font></font><a href="https://www.redbubble.com/i/sticker/Apache-Airflow-by-comdev/40497530.EJUG5" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Redbubble Shop</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">。</font></font></p>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">链接</font></font></h2><a id="user-content-links" class="anchor" aria-label="永久链接： 链接" href="#links"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<ul dir="auto">
+<li><a href="https://airflow.apache.org/docs/apache-airflow/stable/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">文档</font></font></a></li>
+<li><a href="https://s.apache.org/airflow-slack" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">聊天</font></font></a></li>
+<li><a href="https://airflow.apache.org/community/" rel="nofollow"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">社区信息</font></font></a></li>
+</ul>
+<div class="markdown-heading" dir="auto"><h2 tabindex="-1" class="heading-element" dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">赞助商</font></font></h2><a id="user-content-sponsors" class="anchor" aria-label="永久链接：赞助商" href="#sponsors"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg></a></div>
+<p dir="auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Apache Airflow 的 CI 基础设施由以下机构赞助：</font></font></p>
+
+<p dir="auto"><a href="https://astronomer.io" rel="nofollow"><img src="https://camo.githubusercontent.com/3407416dedf0cda059378c011479e55be6d22c2f9e3568f395b42f5f36f4e56b/68747470733a2f2f617373657473322e617374726f6e6f6d65722e696f2f6c6f676f732f6c6f676f466f724c494748546261636b67726f756e642e706e67" alt="天文学家" width="250px" data-canonical-src="https://assets2.astronomer.io/logos/logoForLIGHTbackground.png" style="max-width: 100%;"></a>
+<a href="https://aws.amazon.com/opensource/" rel="nofollow"><img src="/apache/airflow/raw/main/docs/integration-logos/aws/AWS-Cloud-alt_light-bg@4x.png" alt="AWS 开源" width="130px" style="max-width: 100%;"></a></p>
+
+<p dir="auto"><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/6b1deed95879ce24d68a49d768fdb2c75b77a33ca3ec873bb3ec527024043358/68747470733a2f2f7374617469632e73636172662e73682f612e706e673f782d707869643d31623561356533632d646138312d343266352d626566612d343264383336626631623534"><img src="https://camo.githubusercontent.com/6b1deed95879ce24d68a49d768fdb2c75b77a33ca3ec873bb3ec527024043358/68747470733a2f2f7374617469632e73636172662e73682f612e706e673f782d707869643d31623561356533632d646138312d343266352d626566612d343264383336626631623534" alt="追踪像素" data-canonical-src="https://static.scarf.sh/a.png?x-pxid=1b5a5e3c-da81-42f5-befa-42d836bf1b54" style="max-width: 100%;"></a></p>
+</article></div>
